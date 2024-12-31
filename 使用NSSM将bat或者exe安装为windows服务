@@ -1,0 +1,111 @@
+使用NSSM将bat或者exe安装为windows服务
+https://blog.csdn.net/liu854046222/article/details/142234578
+echo off
+::验证当前是否使用管理员身份运行
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' EQU '0' (
+    echo 当前脚本正在使用管理员身份运行√
+) else (
+    echo 当前不是以管理员身份运行，请右键使用管理员身份运行！！！
+    pause
+    exit
+)
+::切换到当前目录
+cd  %~dp0
+ 
+::说明及注意事项
+echo 作者：102400
+echo 邮箱：854046222@qq.com
+echo 日期：20124-09-13
+echo Nssm官网地址：http://www.nssm.cc/usage
+echo 请注意！请注意！请注意！（重要的事说三遍）：
+echo 输入服务数据库的实际程序本身是 nssm，因此在安装服务后【不得移动或删除nssm.exe】
+echo 如果您确实希望更改nssm.exe的路径，可以删除并重新安装该服务。
+::输出选项菜单
+:Menu
+echo.
+::设置控制台背景色
+Color 2f
+echo ***************1：安装服务***************
+echo ***************2: 删除服务***************
+echo ***************3: 启动服务***************
+echo ***************4: 停止服务***************
+echo ***************5: 重启服务***************
+echo ***************6: 退    出***************
+set /p select=请输入数字，按回车（Enter）键继续：
+ 
+if %select%==1 (
+  goto InstallServer
+)
+if %select%==2 (
+  goto RemoveServer
+)
+if %select%==3 (
+  goto StartServer
+)
+if %select%==4 (
+  goto StopServer
+)
+if %select%==5 (
+  goto RestartServer
+)
+if %select%==6 (
+  exit
+)
+ELSE (
+  echo 输入不正确的数字
+  goto Menu
+)
+::安装服务
+:InstallServer
+echo 请输入或粘贴dotnet完整安装路径，按回车（Enter）继续
+echo 注：如果不输入则使用默认地址“C:\Program Files (x86)\dotnet\dotnet.exe”
+set /p dotNetFullPath=
+if "%dotNetFullPath%"=="" (
+    set dotNetFullPath="C:\Program Files (x86)\dotnet\dotnet.exe"
+)
+::输出dotnet安装完整路径
+echo dotnet安装的完整路径是："%dotNetFullPath%"
+::执行安装服务指令
+nssm install BW_Wexflow "%dotNetFullPath%"
+REM "%dotNetFullPath%"
+::应用程序配置Tab
+nssm set BW_Wexflow Application "%dotNetFullPath%"
+nssm set BW_Wexflow AppDirectory "C:\wexflow-3.8-windows-dotnet-core\Wexflow.Server"
+nssm set BW_Wexflow AppParameters Wexflow.Server.dll
+::详情Tab（例如：服务的描述信息）
+nssm set BW_Wexflow DisplayName BW_Wexflow
+nssm set BW_Wexflow Description BW_Wexflow工作流引擎调度服务
+nssm set BW_Wexflow Start SERVICE_AUTO_START
+::登陆选项Tab(使用本地Administrator登陆，注：必须有./表示本地的用户)
+nssm set BW_Wexflow ObjectName ".\Administrator" "bwgateway123@"
+::安装完成后，启动前的服务状态
+nssm status BW_Wexflow
+nssm start BW_Wexflow
+::启动服务后的服务状态
+nssm status BW_Wexflow
+goto Menu
+ 
+::删除服务
+:RemoveServer
+nssm stop BW_Wexflow
+nssm remove BW_Wexflow
+goto Menu
+ 
+::启动服务
+:StartServer
+nssm start BW_Wexflow
+nssm status BW_Wexflow
+goto Menu
+ 
+::停止服务
+:StopServer
+nssm stop BW_Wexflow
+nssm status BW_Wexflow
+goto Menu
+ 
+::重启服务
+:RestartServer
+nssm restart BW_Wexflow
+nssm status BW_Wexflow
+goto Menu
