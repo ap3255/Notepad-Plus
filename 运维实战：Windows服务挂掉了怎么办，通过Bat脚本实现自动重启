@@ -1,0 +1,85 @@
+运维实战：Windows服务挂掉了怎么办，通过Bat脚本实现自动重启
+https://cloud.tencent.com/developer/article/2388452
+大家在日常运维当中，如果Windows服务器的服务挂掉了怎么办，比如数据库、Tomcat、Redis等等。再比如赶上周末放假的话，是不是还需要紧急处理问题，然后一整天的好心情也就没有了，有没有什么好办法来解决这个问题呢。这里给大家介绍通过Bat脚本的方式，实现异常Windows服务的重启，这样再也不用担心服务器因为应用服务挂掉，还需要火急火燎的处理问题了。当然前提是你的应用服务应该配置为Windows服务的方式启动。大家一起来看看吧！
+
+一、新建Bat脚本文件
+这里用mysql服务为例，来进行案例介绍。设置每小时监控一次，如果服务挂掉，就自动重启。当然大家可以根据实际的需求设置定时监控的频率。
+脚本如下:
+
+rem 设置已管理员运行cmd命令
+@echo off
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+goto UACPrompt
+) else ( goto gotAdmin )
+:UACPrompt
+echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+"%temp%\getadmin.vbs"
+exit /B
+:gotAdmin
+if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
+
+rem 定义循环间隔时间和监测的服务，这里设置为1小时
+set secs=3600
+rem 这里已mysql服务为案例
+set srvname="mysql"
+ 
+echo.
+echo ========================================
+echo ==         查询计算机服务的状态，     ==
+echo ==     每间隔%secs%秒种进行一次查询，     ==
+echo ==     发现服务其停止，立即启动。     ==
+echo ========================================
+echo.
+echo 此脚本监测的服务是：%srvname%
+echo.
+ 
+if %srvname%. == . goto end
+ 
+:chkit
+set svrst=0
+rem 使用for 循环遍历当前系统上正在运行的服务列表。判断运行的服务列表里面是否存在 %srvname% ，匹配成功，则将 svrst 的值设置为 1。
+for /F "tokens=1* delims= " %%a in ('net start') do (
+    if /I "%%a %%b" == %srvname% (
+        set svrst=1
+       
+    )
+)
+rem 查询服务状态
+echo 服务状态为：%svrst%
+if %svrst% == 0 (
+    net start %srvname%
+    echo 服务 %srvname% 正常启动成功了。
+) 
+
+rem 下面的命令用于延时，否则可能会导致cpu单个核心满载。
+ping -n %secs% 127.0.0.1 > nul
+goto chkit
+ 
+:end
+
+注意：需要把Bat脚本文件设置为ANSI编码，否则会出现控制台中文乱码的情况。
+
+关于脚本本身的含义大家直接看脚本里面的注释就很清楚了，另外还增加了直接指定管理员命令运行Bat，这样避免直接双击运行Bat脚本而没有权限的问题。这部分脚本可以通用。大家如果编写了其他运维脚本也在首行可以加上这段，就可以实现自动以管理员身份运行。
+
+rem 设置已管理员运行cmd命令
+@echo off
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+goto UACPrompt
+) else ( goto gotAdmin )
+:UACPrompt
+echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+"%temp%\getadmin.vbs"
+exit /B
+:gotAdmin
+if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
+三、封装为服务的方式运行
+建议把Bat脚本打包为Windows服务器的方式运行，如果直接使用cmd窗口运行的话，有被关掉的风险，使用后台运行的方式更加可靠。可以参考如下三种方式：
+
+3.1 NSSM
+使用nssm（Non-Sucking Service Manager）工具来将.bat脚本转换为服务。具体如何操作，可以官网查看。
+
+官网：http://www.nssm.cc/usage
