@@ -1,0 +1,114 @@
+https://www.cnblogs.com/dx5800/p/18441176
+OpenCV
+OpenCV（Open Source Computer Vision Library）是一个开源计算机视觉和机器学习软件库。以下是 OpenCV 的一些主要特性：
+
+主要特性
+功能丰富：OpenCV 提供了超过2500个优化的算法，包括图像处理、特征检测、物体识别、面部识别、图像分割、运动分析等。
+跨平台：支持 Windows、Linux、macOS、Android 和 iOS 等多种平台。
+高性能：经过优化，支持多线程和并行计算，以实现更快的处理速度。
+强大的社区支持：OpenCV 拥有活跃的开发者社区，提供了大量的文档、教程和示例代码。
+安装和使用
+OpencvSharp是对Opencv的.Net封装。要在 .NET 项目中使用 OpenCVSharp，需要根据不同的系统安装不同的运行时包，Nuget上面也有OpenCvSharp4的Ubuntu运行时库，这里只是介绍自己如何通过手动编译自己需要的库。可以通过 NuGet 包管理器安装：
+
+Install-Package OpenCvSharp4
+然后，可以在代码中使用 OpenCV 的功能，例如：
+
+internal class Program
+{
+    static void Main(string[] args)
+    {
+ 
+        Mat mat = new Mat("color.png",ImreadModes.Grayscale);
+        Cv2.ImWrite("gray.png", mat);
+        Console.WriteLine("Hello, World!");
+        Console.ReadKey();
+    }
+}
+但是代码在Ubuntu执行会报错，因为缺少依赖库。
+
+ 
+Unhandled exception. System.TypeInitializationException: The type initializer for 'OpenCvSharp.Internal.NativeMethods' threw an exception.
+ ---> System.DllNotFoundException: Unable to load shared library 'OpenCvSharpExtern' or one of its dependencies. In order to help diagnose loading problems, consider setting the LD_DEBUG environment variable: libOpenCvSharpExtern: cannot open shared object file: No such file or directory
+   at OpenCvSharp.Internal.NativeMethods.redirectError(CvErrorCallback errCallback, IntPtr userdata, IntPtr& prevUserdata)
+   at OpenCvSharp.Internal.ExceptionHandler.RegisterExceptionCallback()
+   at OpenCvSharp.Internal.NativeMethods.LoadLibraries(IEnumerable`1 additionalPaths)
+   at OpenCvSharp.Internal.NativeMethods..cctor()
+   --- End of inner exception stack trace ---
+   at OpenCvSharp.Internal.NativeMethods.imgcodecs_imread(String fileName, Int32 flags, IntPtr& returnValue)
+   at OpenCvSharp.Mat..ctor(String fileName, ImreadModes flags)
+   at OpenCVDemo.Program.Main(String[] args) in C:\Users\liubin\source\repos\OpenCVDemo\OpenCVDemo\Program.cs:line 10
+Aborted (core dumped)
+image
+
+这种情况下就需要根据自己的情况编译OpenCV和OpenCvSharp。下面介绍如何编译：
+
+在 Linux 上安装 OpenCV 并配置第三方库的步骤如下。假设你使用的是 Ubuntu 发行版，但大部分步骤也适用于其他 Linux 发行版，只是包管理器和一些命令可能会有所不同。
+
+1. 更新系统
+首先，确保你的系统是最新的：
+
+sudo apt update
+sudo apt upgrade
+2. 安装 OpenCV 的依赖项
+安装 OpenCV 所需的依赖库：
+
+sudo apt install -y build-essential cmake git libgtk2.0-dev pkg-config libavcodec-dev \
+libavformat-dev libswscale-dev libjpeg-dev libpng-dev libtiff-dev gfortran openexr \
+libatlas-base-dev python3-dev python3-numpy libv4l-dev libxvidcore-dev libx264-dev 
+3. 获取 OpenCV 源代码
+克隆 OpenCV 和 OpenCV 贡献模块的 GitHub 仓库：
+
+git clone https://github.com/opencv/opencv.git
+git clone https://github.com/opencv/opencv_contrib.git
+4. 创建构建目录
+为 OpenCV 创建一个构建目录：
+
+cd opencv
+mkdir build
+cd build
+5. 配置 OpenCV
+使用 CMake 配置 OpenCV，指定需要的选项和库。在这个示例中，我们将指向 opencv_contrib 中的模块，并设置安装路径。
+
+cmake -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+      -D BUILD_opencv_python3=OFF \
+      -D BUILD_opencv_java=OFF \
+      -D BUILD_TESTS=OFF \
+      -D BUILD_PERF_TESTS=OFF \
+      -D WITH_CUDA=OFF \
+      -D WITH_OPENGL=ON \
+      -D WITH_TBB=ON \
+      -D WITH_V4L=ON \
+      -D WITH_IPP=ON \
+      -D WITH_OPENMP=ON \
+      -D WITH_FFMPEG=ON \
+      -D BUILD_EXAMPLES=ON \
+      -D ENABLE_PRECOMPILED_HEADERS=OFF ..
+ 
+6. 编译 OpenCV
+使用 make 命令编译 OpenCV。-j 参数可以根据你的 CPU 核心数来加快编译速度：
+
+make -j$(nproc)
+7. 安装 OpenCV
+编译完成后，安装 OpenCV 到指定的目录：
+
+sudo make install # 编译的库会安装到/usr/local
+8. 配置库路径
+安装后，配置共享库路径，以便系统能够找到 OpenCV 库。编辑 /etc/ld.so.conf.d/opencv.conf 并添加以下行：
+
+/usr/local/lib
+然后运行以下命令以更新库缓存：
+
+sudo ldconfig
+9. 获取 OpenCVSharp 源代码
+git clone https://github.com/shimat/opencvsharp.git
+10. 编译以及安装OpenCVSharp
+cd opencvsharp/src
+mkdir build
+cd build
+cmake -D CMAKE_INSTALL_PREFIX=/usr/local ..
+make -j$(nproc)
+sudo make install
+这下代码就可以正常执行了，输入的color.png是一张彩色图，保存的gray.png是灰度图。
+在拉取代码的时候可以自己手动切换到自己需要的版本再编译，编译安装完后会生成动态库，把动态库的路径添加到LD_LIBRARY_PATH或者/etc/ld.so.conf(如第8步)即可。
