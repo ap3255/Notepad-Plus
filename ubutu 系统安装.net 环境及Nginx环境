@@ -1,0 +1,80 @@
+ubutu 系统
+
+安装.net 环境
+
+为所有用户设置PATH
+打开一个终端。
+
+输入以下命令编辑vim   /etc/environment文件：  编辑环境变量
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/qi/.dotnet:/home/qi/.dotnet/tools"
+
+
+wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh      下载 .sh 文件
+
+
+chmod +x ./dotnet-install.sh      添加执行权限
+
+
+./dotnet-install.sh      执行
+
+
+
+
+设置PATH 当前
+
+export DOTNET_ROOT=$HOME/.dotnet             
+
+export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+
+echo $PATH
+
+输入以下命令编辑vim   /etc/environment文件：  编辑环境变量  系统
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/qi/.dotnet:/home/qi/.dotnet/tools"
+
+
+nginx 配置环境 
+https://learn.microsoft.com/zh-cn/troubleshoot/developer/webapps/aspnetcore/practice-troubleshoot-linux/2-1-create-configure-aspnet-core-applications
+
+使用 APT 安装 Nginx
+安装 Nginx 非常简单。 sudo apt install nginx运行命令以在 Ubuntu 虚拟机上安装程序。
+安装完成后，运行 whereis nginx 以发现程序安装的位置。 可以通过检查输出来查看 Nginx 配置文件的位置。 以下屏幕截图显示配置文件位于 /etc/nginx 文件夹中。
+使用 systemctl 管理服务
+如果未看到 Nginx 正在运行，可以通过运行 sudo systemctl start nginx显式启动它。 尽管本练习将演示 systemctl Nginx 的命令，但这些命令用于将 Web 应用程序配置为作为守护程序自动启动。
+
+安装完成后，Nginx 已配置为自动启动。 Nginx 作为守护程序运行。 可以使用 systemctl 检查守护程序的状态。
+
+该 systemctl 命令用于管理此类任务的“服务”，例如显示服务的状态或启动和停止它。 某些可用参数是启动、停止、重启、启用、禁用和状态。 若要检查 Nginx 的状态，请运行 systemctl status nginx
+
+
+dotnet publish -c Release -r linux-x64 --self-contained            发布 打包
+
+
+
+sudo rm -rf ./QirobotHost-linux-x64/*       删除目录下所有文件    目录不删除
+
+
+chmod -R +x QirobotHost-linux-x64/        目录下文件 添加执行权限   +x
+
+
+
+cp -af ./publish/* /home/qi/QirobotHost-linux-x64/      复制 publish 下所有文件 到  目标目录  /home/qi/QirobotHost-linux-x64/
+
+
+
+
+sudo rm -rf ./QirobotIot-linux-x64/* 
+
+chmod -R +x QirobotIot-linux-x64/  
+
+cp -af ./publish/* /home/qi/QirobotIot-linux-x64/
+
+
+
+/etc/nginx/sites-enabled/default   修改配置文件
+
+/etc/nginx/sites-available/
+nginx  
+/var/www/html;
+
