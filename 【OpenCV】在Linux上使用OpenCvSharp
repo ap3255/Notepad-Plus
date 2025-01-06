@@ -1,0 +1,179 @@
+https://blog.csdn.net/grape_yan/article/details/135950238
+
+前言
+
+OpenCV是一个基于Apache2.0许可（开源）发行的跨平台计算机视觉和机器学习软件库，它具有C++，Python，Java和MATLAB接口，并支持Windows，Linux，Android和Mac OS。OpenCvSharp是一个OpenCV的 .Net wrapper，应用最新的OpenCV库开发，使用习惯比EmguCV更接近原始的OpenCV，该库采用LGPL发行，对商业应用友好。
+
+文章目录
+1. 项目环境
+2. 创建控制台项目
+3. 添加 Nuget Package 程序包
+5. 安装依赖项目
+4. 测试应用
+5. 总结
+1. 项目环境
+编码环境：Visual Studio Code
+程序框架：.NET 6.0
+  目前在Linux上使用C#语言官方提供了Visual Studio Code平台，所以在此处我们演示使用Visual Studio Code进行演示。而代码的运行与配置使用dotnet指令实现。
+
+  关于Visual Studio Code以及.NET的安装方式可以参考一下官方教程：
+
+在 Linux 上安装 .NET：由于Linux系统环境类型较多，所以可以根据官方提供的教程并根据自己的系统安装即可；
+
+Visual Studio Code on Linux：大家可以根据自己的环境进行安装。
+
+2. 创建控制台项目
+  此处使用dotnet指令创建新项目，在Visual Studio Code的终端中输入一下指令：
+
+dotnet new console --framework net6.0 --use-program-main -o test_opencvsharp
+1
+  如下图所示，在终端中输入以下指令后，会自动创建新的项目以及项目文件夹。
+
+
+  在创建好项目后，我们使用vscode打开，输入以下指令，如下图所示：
+
+test_opencvsharp
+code .
+1
+2
+
+
+3. 添加 Nuget Package 程序包
+  OpenCvSharp4是一个可以跨平台使用的程序包，并且官方也提供了编译好的程序包，用户可以根据自己的平台进行安装。在Linux上，主要需要安装一下两个包，分别是OpenCvSharp4的官方程序包以及OpenCvSharp4的运行依赖包。
+
+dotnet add package OpenCvSharp4
+dotnet add package OpenCvSharp4_.runtime.ubuntu.20.04-x64
+1
+2
+  依次输入指令后输出如下图所示：
+
+
+
+  安装完上面两个安装包后，项目的配置的文件中会增加下面两个配置。
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4" Version="4.9.0.20240103" />
+    <PackageReference Include="OpenCvSharp4_.runtime.ubuntu.20.04-x64" Version="4.9.0.20240103" />
+  </ItemGroup>
+
+</Project>
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+  接下来运行dotnet run，检验项目中是否包含所需要的配置文件：OpenCvSharp.dll、runtimes/ubuntu.20.04-x64/native/。打开项目运行生成的文件夹bin/{build_config}/{dotnet_version}/，在本项目中是bin/Debug/net6.0/文件夹，如下图所示：
+
+
+
+可以看出，在程序运行后，安装的程序包中所有项目都已经加载到当前项目中，如果出现缺失，就需要找到程序包位置，将该文件复制到指定路径。
+
+5. 安装依赖项目
+  在上面的测试中，并为使用到安装的OpenCvSharp4，因此运行并未出现其他错误，如果主机电脑之前没有安装使用过OpenCV，所以第一次使用需要配置依赖项目。
+  首先第一步检查一下缺少什么依赖项，在终端中输入以下指令：
+
+ldd libOpenCvSharpExtern.so
+1
+
+
+  如上图所示，经过ldd检测后，发现存在未安装的依赖，接下爱就是安装相应的依赖项，首先是解决tesseract缺少，在终端输入以下指令：
+
+sudo apt install tesseract-ocr
+1
+  安装完成后再进行依赖项检测，如下图所示：
+
+
+  可以看出，经过安装后，该依赖项已经可以检测到，接下来就是安装其他依赖项，依次输入以下指令即可：
+
+sudo apt install libdc1394-dev
+sudo apt install libavcodec-dev 
+sudo apt install libavformat-dev
+sudo apt install libswscale-dev
+sudo apt install libopenexr-dev
+1
+2
+3
+4
+5
+  最后，安装完成后，在进行检测，如下图所示，可以看出，目前已经成功检测到所有依赖项，程序就可以正常使用了。
+
+
+4. 测试应用
+  最后我们编写项目代码进行测试，如下面代码所示：
+
+using System;
+using OpenCvSharp;
+namespace test_opencvsharp 
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Mat image = Cv2.ImRead("image.jpg");
+            Mat image2=new Mat();
+            if (image!=null)
+            {
+                Console.WriteLine("srcImg is OK!");
+            }
+            Console.WriteLine("图像的宽度是：{0}",image.Rows);
+            Console.WriteLine("图像的高度是：{0}", image.Cols);
+            Console.WriteLine("图像的通道数是：{0}", image.Channels());
+            Cv2.ImShow("src", image);
+            Cv2.CvtColor(image, image2, ColorConversionCodes.RGB2GRAY);//转为灰度图像
+            Cv2.ImShow("src1", image2);
+            Cv2.WaitKey(0);
+            Cv2.DestroyAllWindows();//销毁所有窗口
+        }
+    }
+}
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+  项目代码运行后，最后呈现效果如下图所示：
+
+
+
+5. 总结
+  在本次项目中，我们成功实现了在Linux上使用OpenCvSharp，并成功配置了OpenCvSharp依赖库，实现了在.NET 6.0环境下使用C#语言调用OpenCvSharp库，实现的图片数据的读取以及图像色彩转换，并进行了图像展示。
