@@ -1,0 +1,53 @@
+参考  https://www.postgresql.org/download/linux/ubuntu/
+# Import the repository signing key:
+sudo apt install curl ca-certificates
+sudo install -d /usr/share/postgresql-common/pgdg
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+# Create the repository configuration file:
+sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+# Update the package lists:
+sudo apt update
+
+# Install the latest version of PostgreSQL:
+# If you want a specific version, use 'postgresql-16' or similar instead of 'postgresql'
+sudo apt -y install postgresql
+
+sudo apt -y install postgresql-16
+
+修改密码
+sudo -u postgres psql
+修改密码
+ALTER USER postgres PASSWORD 'your_password';             postgres=#为PostgreSQL下的命令提示符，–注意最后的分号；
+退出
+\q
+
+开启远程访问
+允许任何主机访问
+vim  /etc/postgresql/16/main/pg_hba.conf
+host    all             all             all                     scram-sha-256
+修改监听地址
+vim /etc/postgresql/16/main/postgresql.conf
+listen_addresses = '*'
+
+// 改变文件 所属 
+sudo chown postgres:postgres /home/qi/pgsqlbackup/lunshi.backup
+sudo chown postgres /home/qi/pgsqlbackup/lunshi.backup
+
+// copy  备份文件   解决问题  pg_restore: 错误: 无法打开输入文件 "/home/qi/pgsqlbackup/lunshi.backup": Permission denied
+
+sudo cp  /home/qi/pgsqlbackup/lunshi.backup /var/lib/pgsql/backup/
+
+
+// 恢复备份文件  
+sudo -u postgres pg_restore -U postgres --dbname IMACP --verbose /var/lib/pgsql/backup/lunshi.backup   
+
+
+
+配置IP   sudo ifconfig ens37 192.168.0.199 netmask 255.255.255.0
+
+
+opencvsharp4   libOpenCvSharpExtern.so
+~/.dotnet/shared/Microsoft.NETCore.App/8.0.11$ sudo cp /home/qi/Pictures/opencvtest/test_opencvsharp/bin/Debug/net8.0/runtimes/ubuntu.22.04-x64/native/libOpenCvSharpExtern.so  ./
+
