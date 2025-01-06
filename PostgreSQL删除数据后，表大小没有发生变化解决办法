@@ -1,0 +1,29 @@
+解决方案：
+1.换一种方式来删除数据
+用TRUNCATE 命令可以更快地清空表并释放存储空间。
+执行后表空间立即释放
+补充：
+DELETE
+细粒度控制：
+DELETE 允许使用 WHERE 子句来指定删除的条件，从而删除部分数据。例如：
+
+DELETE FROM your_table WHERE condition;
+1
+可以选择性地删除某些行。
+事务日志：
+DELETE 操作会记录在事务日志中，并且每个被删除的行都会被记录，因此如果表非常大，DELETE 可能会导致大量的日志写入。
+触发器和约束：
+DELETE 会触发任何定义在表上的 DELETE 触发器。
+外键约束会被检查和维护。
+性能：
+对于大表上的大量删除操作，DELETE 可能会相对较慢，因为它会逐行处理和记录每个删除的行。
+
+TRUNCATE
+全表操作：
+TRUNCATE 一次性删除表中的所有行，没有 WHERE 子句。例如：
+
+TRUNCATE TABLE your_table;
+1
+不能选择性地删除行，只能删除整个表中的数据。
+————————————————                       
+原文链接：https://blog.csdn.net/LightStrikeHonor/article/details/139270909
