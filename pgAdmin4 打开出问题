@@ -1,0 +1,50 @@
+问题：{"success":0,"errormsg":"'creatable'","info":"","result":null,"data":null} 
+查看日志：pgadmin4.log
+Total spawn time to start the pgAdmin4 server: 0.005 Sec
+2024-12-14 09:23:27,560: WARNING	werkzeug:	Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+
+ * Serving Flask app 'pgadmin'
+ * Debug mode: off
+
+------------------------------------------
+Total time taken to ping pgAdmin4 server: 4.02 Sec
+------------------------------------------
+Total launch time of pgAdmin4: 4.115 Sec
+------------------------------------------
+Application Server URL: http://127.0.0.1:46619/?key=e342078e-dcbb-4ab1-b4b5-5cb2dfa77d70
+2024-12-14 09:23:27,958: ERROR	pgadmin:	'creatable'
+Traceback (most recent call last):
+  File "/usr/pgadmin4/venv/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/venv/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/venv/lib/python3.11/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/authenticate/mfa/utils.py", line 304, in inner
+    return mfa_enabled(
+           ^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/authenticate/mfa/utils.py", line 171, in mfa_enabled
+    return execute_if_disabled()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/authenticate/mfa/utils.py", line 297, in execute_func
+    return wrapped(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/user_login_check.py", line 22, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/browser/__init__.py", line 417, in index
+    language = user_languages.get() or 'en'
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/utils/preferences.py", line 118, in get
+    is_format_data, data = self._get_format_data(res)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/pgadmin4/web/pgadmin/utils/preferences.py", line 152, in _get_format_data
+    if self.control_props and self.control_props['creatable']:
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'creatable'
+
+解决办法：del “C:\Users\xx\AppData\Roaming\pgAdmin\pgadmin4.db” 。  删除 pgadmin4.db 
+work，but All connection configurations are lost
