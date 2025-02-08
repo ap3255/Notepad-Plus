@@ -1,4 +1,6 @@
-问题：{"success":0,"errormsg":"'creatable'","info":"","result":null,"data":null} 
+
+参考 https://github.com/pgadmin-org/pgadmin4/issues/8256
+问题：{"success":0,"errormsg":"'creatable'","info":"","result":null,"data":null}  
 查看日志：pgadmin4.log
 Total spawn time to start the pgAdmin4 server: 0.005 Sec
 2024-12-14 09:23:27,560: WARNING	werkzeug:	Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
