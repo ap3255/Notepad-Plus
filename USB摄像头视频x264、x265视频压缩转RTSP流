@@ -1,0 +1,96 @@
+## USB摄像头视频x264、x265视频压缩转RTSP流
+
+### 一、环境
+
+1、开发板：野火鲁班猫4，以下称作3588；
+
+2、系统：基于Arm架构下的Ubuntu20.04---Linux操作系统；
+
+3、所需工具：git、make、cmake、ffmpeg；
+
+4、应用产品：pad机器人；
+
+### 二、安装x264、x265第三方库
+
+1、下载安装x264第三方库
+
+~~~
+git clone https://code.videolan.org/videolan/x264.git
+cd x264
+./configure --enable-shared
+make
+sudo make install
+~~~
+
+2、下载安装x265第三方库
+
+~~~
+git clone https://bitbucket.org/multicoreware/x265_git.git
+cd x265_git/build/linux
+./make-Makefiles.bash
+make
+sudo make install
+~~~
+
+### 三、安装ffmpeg工具
+
+官网：https://ffmpeg.org//releases/
+
+在官网选择合适版本下载到3588，下面以6.1版本为例
+
+~~~
+tar -xf ffmpeg-6.1.tar.gz
+cd ffmpeg-6.1
+./configure --enable-gpl --enable-libx264 --enable-libx265
+make 
+sudo make install
+~~~
+
+### 四、安装Mediamtx流媒体服务器
+
+[GitHub仓库地址](https://github.com/bluenviron/mediamtx)，选择合适版本下载到3588，下面以1.0.0版本为例
+
+~~~
+mkdir Mediamtx
+mv mediamtx_v1.0.0_linux_arm64v8.tar.gz Mediamtx
+cd Mediamtx
+tar -xf mediamtx_v1.0.0_linux_arm64v8.tar.gz
+~~~
+
+##### 1、向mediamtx流媒体服务器推流
+
+ Mediamtx免安装，解压之后，该文件夹下一般会有三个文件：mediamtx、mediamtx.yml、LICENSE；修改**mediamtx.yml**文件的配置，搭建流媒体服务器，在paths添加相应地址
+
+~~~
+paths:
+  left_usb:
+      source: publisher
+  right_usb:
+    source: publisher
+~~~
+
+##### 2、通过mediamtx流媒体服务器向外推流（可访问公网的环境下）
+
+修改修改**mediamtx.yml**文件的配置，搭建流媒体服务器，在paths添加相应命令
+
+~~~
+paths:
+	left_usb:
+		ffmpeg -f v4l2 -input_format mjpeg -framerate 15 -video_size 640x480 -i /dev/video0 -c:v libx264 -preset ultrafast -tune zerolatency -bufsize 2M -f rtsp rtsp://100.101.25.168:8554/left_usb
+~~~
+
+
+
+ffmpeg -f v4l2 -input_format mjpeg -framerate 15 -video_size 640x480 -i /dev/video0 -c:v libx264 -preset ultrafast -tune zerolatency -bufsize 2M -f rtsp rtsp://localhost:8554/left_usb
+
+### 五、使用ffmpeg压缩编码
+
+**调整ffmpeg参数**，将v4l2设备的视频转换为rtsp流，下面的示例为将video0的USB摄像头进行264压缩，设置像素为640*480，帧率为15，缓存区为2M
+
+~~~
+ffmpeg -f v4l2 -input_format mjpeg -framerate 15 -video_size 640x480 -i /dev/video0 -c:v libx264 -preset ultrafast -tune zerolatency -bufsize 2M -f rtsp rtsp://localhost:8554/left_usb
+~~~
+
+### 六、其他
+
+​		使用ffmpeg将USB摄像头视频进行压缩编码转换为RTSP流，推到Mediamtx流媒体服务器，从VLC拉取视频流，即可看到USB摄像头画面，即说明配置成功，编写自启动服务到**/etc/systemd/system/**目录下，开启开机自启动，重启后多测试几次。
