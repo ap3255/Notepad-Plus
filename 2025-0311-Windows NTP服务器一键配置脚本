@@ -1,0 +1,41 @@
+@echo off
+REM ===================================================
+REM Windows NTP服务器一键配置脚本
+REM ===================================================
+
+REM 检查是否以管理员身份运行
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo 请以管理员身份运行此脚本！
+    pause
+    exit /b
+)
+
+REM 停止Windows Time服务
+echo 正在停止Windows Time服务...
+net stop w32time
+
+REM 修改注册表配置NTP服务器
+echo 正在配置注册表...
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Config" /v "AnnounceFlags" /t REG_DWORD /d 5 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" /v "Enabled" /t REG_DWORD /d 1 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" /v "Type" /t REG_SZ /d "NTP" /f
+
+REM 允许防火墙中的UDP 123端口
+echo 正在配置防火墙规则...
+netsh advfirewall firewall add rule name="NTP" protocol=UDP dir=in localport=123 action=allow
+
+REM 设置Windows Time服务为自动启动
+echo 正在设置Windows Time服务为自动启动...
+sc config w32time start= auto
+
+REM 启动Windows Time服务
+echo 正在启动Windows Time服务...
+net start w32time
+
+REM 验证配置
+echo 正在验证配置...
+w32tm /stripchart /computer:127.0.0.1
+
+echo NTP服务器配置完成！
+pause
