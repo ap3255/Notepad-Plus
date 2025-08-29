@@ -1,0 +1,70 @@
+解决Ubuntu 20.04下外接显示屏无信号问题【多次尝试无坑完整版！！！】
+https://blog.csdn.net/yuajiang/article/details/149942765
+https://blog.csdn.net/qq_41889538/article/details/140498262
+
+二、初步尝试：更换显卡驱动
+首先，我怀疑是显卡驱动的问题。于是，我尝试更换NVIDIA驱动，具体步骤如下：
+网上安装显卡驱动的教程很多，这里我介绍一种目前最简单，最有效的安装方法
+
+2.1 通过图形用户界面安装显卡驱动的步骤
+在Ubuntu系统中，可以通过图形用户界面（GUI）来安装和管理显卡驱动，具体步骤如下：
+
+（1）打开“软件和更新”工具：
+点击屏幕左上角的“活动”按钮，搜索“软件和更新”并打开该应用程序。
+（2）进入“附加驱动”选项卡：
+在“软件和更新”窗口中，选择“附加驱动”选项卡。系统会自动搜索和列出适用于您显卡的驱动程序。
+（3）选择适合的显卡驱动：
+在“附加驱动”选项卡中，系统会显示当前可用的显卡驱动程序及其状态，如图所示。选择您需要的驱动程序。
+（4）应用更改：
+选择合适的驱动程序后，点击“应用更改”按钮。系统会自动下载并安装选定的驱动程序。
+（5）重启系统：
+更改之后记得要重启，新驱动程序才能生效
+新安装Ubuntu20.04系统无法配置nvidia-settings，/etc/X11/路径下没有xorg.conf文件，并且外接显示器不显示
+
+2.2 图片中显卡驱动的解释
+在上述图片中，可以看到多个可用的显卡驱动程序选项：
+
+（1）使用 NVIDIA driver metapackage 来自 nvidia-driver-535 (专有, tested)：
+这是NVIDIA提供的最新专有驱动程序，并且已经过测试，确保稳定性和兼容性。
+（2）使用 NVIDIA Server Driver metapackage 来自 nvidia-driver-535-server (专有)：
+这是针对服务器优化的NVIDIA驱动程序，适用于需要高稳定性和长时间运行的环境。
+（3）使用 NVIDIA driver (open kernel) metapackage 来自 nvidia-driver-535-open (专有)：
+这是一个开源内核模块的NVIDIA驱动程序，通常用于需要开源代码审查或自定义内核模块的情况。
+（4）使用 NVIDIA driver (open kernel) metapackage 来自 nvidia-driver-535-server-open (专有)：
+这是开源内核模块的服务器优化NVIDIA驱动程序。
+（5）使用 X.Org X server – Nouveau display driver 来自 xserver-xorg-video-nouveau (开源)：
+这是开源社区提供的Nouveau驱动程序，支持基本的显卡功能，但通常性能和兼容性不如NVIDIA的专有驱动程序。
+选择当前显卡驱动的原因
+要选择“使用 NVIDIA driver metapackage 来自 nvidia-driver-535 (专有, tested)”驱动程序，因为该驱动程序是NVIDIA提供的专有驱动程序，并且经过测试（tested），确保在各种应用场景下的稳定性和高性能表现。专有驱动程序通常提供比开源驱动程序（如Nouveau）更好的硬件支持和优化，特别是在需要图形加速和高性能计算的任务中
+
+三、关键突破：BIOS设置显卡直连
+在经过多次无果的尝试后，我开始思考是否是硬件设置的问题。经过大量资料查阅，我了解到惠普暗影精灵9支持NVIDIA Advanced Optimus技术，这意味着显卡连接方式可以在“智能切换”（NVIDIA Advanced Optimus）和“显卡直连”（Discrete）之间切换。
+
+默认情况下，BIOS中的显卡连接方式设置为“智能切换”，这可能是导致Ubuntu无法正常识别外接显示屏的原因。于是，我决定尝试更改BIOS设置：
+
+重启电脑，并在开机时按下F10键进入BIOS设置界面。
+在BIOS设置界面中，找到显卡设置选项。
+将显卡连接方式从“NVIDIA Advanced Optimus”更改为“Discrete”。
+保存设置并退出BIOS。
+重启系统后，我再一次连接外接显示屏，这次终于成功了！外接显示屏在Ubuntu 20.04下终于正常显示了。
+
+使用 
+一、安装XServer源，生成配置文件然后重启（出现笔记本屏幕不显示只显示外接显示器请执行第二步）
+sudo apt install xorg-server-source
+sudo nvidia-xconfig
+sudo reboot
+AI写代码
+c++
+运行
+1
+2
+3
+二、重启、配置独显直连
+sudo reboot
+AI写代码
+c++
+运行
+1
+重启后出现logo按快捷键（F2/F10/F12）进入BIOS界面，我的笔记本是DELL的，有个选项
+是Display，然后下滑将同时使用独显和集显的选项关闭并且保存退出即可，如图：
+（注：这里可能不同牌子的电脑设置不太一样，可以网上搜一下对应牌子的电脑如何在BIOS中设置独显直连）
