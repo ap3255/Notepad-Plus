@@ -1,0 +1,16 @@
+cmd /c "cd /d D:\Software\emqx-5.3.2\bin &&emqx start && exit"
+exit
+
+
+
+新建emqx.bat 脚本
+内容：
+cmd /c "cd /d D:\Software\emqx-5.3.2\bin &&emqx start && exit"
+exit
+
+运行
+shell:startup
+复制emqx.bat 到开机启动的目录
+
+注意：
+修改 D:\Software\emqx-5.3.2\bin 的路径为实际文件路径
