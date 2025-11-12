@@ -1,0 +1,34 @@
+httpClient 请求的DefaultRequestHeaders 格式错误解答
+
+
+本文介绍了如何在C#中使用HttpClient进行HTTP请求，包括设置ServerCertificateCustomValidationCallback以处理SSL证书验证，指定SslProtocols以支持TLS协议，以及正确添加Bearertoken到Authorization头。还讨论了处理RequestTimeout的情况。
+
+
+clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+ clientHandler.SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13 | System.Security.Authentication.SslProtocols.Tls11;
+ using (var httpClient = new HttpClient(clientHandler))
+ {
+
+     httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+
+     httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+     string authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes(token));
+    //因为 token 是json格式，所以用其他的都是错误的
+     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", token);
+
+    //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",token); 错了
+     //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("",token);  //错了
+    // httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);  
+    //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+     var content = new StringContent(RequestPara, System.Text.Encoding.UTF8, "application/json");
+     using (var response = await httpClient.PostAsync(Url, content))
+     {
+         if (response.StatusCode == HttpStatusCode.RequestTimeout)
+         {
+             return HttpStatusCode.RequestTimeout.ToString();
+         }
+         return await response.Content.ReadAsStringAsync();
+     }
+ }
+
