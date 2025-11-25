@@ -1,0 +1,54 @@
+DO $$
+DECLARE
+    table_record RECORD;
+    col_name TEXT;
+    modify_sql TEXT;
+BEGIN
+    FOR table_record IN 
+        SELECT 
+            n.nspname AS schemaname,
+            c.relname AS tablename
+        FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname IN ('Nav','IMACP')
+          AND c.relkind = 'r'  -- 只处理普通表（排除视图、物化视图等）
+    LOOP
+        BEGIN
+            RAISE NOTICE '正在处理表: %', table_record.schemaname || '.' || table_record.tablename;
+            
+            FOR col_name IN 
+                SELECT column_name 
+                FROM information_schema.columns
+                WHERE table_name = table_record.tablename
+                    AND table_schema = table_record.schemaname
+                    AND data_type = 'smallint'
+            LOOP
+                BEGIN
+                    RAISE NOTICE '  找到smallint列: %', col_name;
+                    
+                    -- 构建修改列类型的SQL语句
+                    modify_sql := format(
+                        'ALTER TABLE %I.%I ALTER COLUMN %I TYPE INT',
+                        table_record.schemaname,
+                        table_record.tablename,
+                        col_name
+                    );
+                    
+                    RAISE NOTICE '  执行SQL: %', modify_sql;
+                    EXECUTE modify_sql;
+                    RAISE NOTICE '  列 % 类型已修改为INT', col_name;
+                    
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        RAISE WARNING '修改列 % 时出错: %', col_name, SQLERRM;
+                END;
+            END LOOP;
+            
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE WARNING '处理表 % 时发生错误: %', table_record.tablename, SQLERRM;
+        END;
+    END LOOP;
+    
+    RAISE NOTICE '所有表处理完成';
+END $$;
